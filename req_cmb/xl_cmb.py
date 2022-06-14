@@ -4,6 +4,8 @@ from openpyxl.utils import get_column_letter
 import os
 import time
 import glob
+import numpy as np
+from extlib import act_max_row
 
 user_path = os.path.dirname(__file__)
 #folder_path=user_path+os.sep+time.strftime("%Y-%m-%d")
@@ -37,6 +39,8 @@ for k in range(len(list_file)):
             print('sheet not found!!')
         else:
             sheet = wb[sheetname]
+            row_rm = act_max_row(sheet,[4,5,14,15])
+            print(row_rm)
             if(k == 0):
                 sheet2 = wb2.create_sheet(sheetname)
             else:
@@ -63,12 +67,17 @@ for k in range(len(list_file)):
                     cell2 = str(wm[i]).replace('(<CellRange ', '').replace('>,)', '')            
                     #print(cell2)
                     #sheet2.merge_cells(cell2)
-                    if(k == 0 or wm[i].min_row > 3):
+                    if((k == 0 or wm[i].min_row > 3) and wm[i].min_row not in row_rm and wm[i].max_row not in row_rm ):
                         sheet2.merge_cells(start_row=wm[i].min_row+row_offset[index], end_row=wm[i].max_row+row_offset[index], start_column=wm[i].min_col, end_column=wm[i].max_col)
-                    
-            for i, row in enumerate(sheet.iter_rows()):            
+            for i, row in enumerate(sheet.iter_rows()):
                 #print(i)
                 #print(row)
+                if(i+1 in row_rm):
+                    #print('row %d removed in sheet %s' %i+1 sheetname)
+                    print('='*50)
+                    print('\nWarning: row %d removed in sheet %s\n' %(i+1,sheetname))
+                    print('='*50)
+                    continue
                 sheet2.row_dimensions[i+1+row_offset[index]].height = sheet.row_dimensions[i+1].height                
                 for j, cell in enumerate(row):
                     if(k==0 or i>3):
@@ -87,12 +96,13 @@ for k in range(len(list_file)):
                             target_cell.number_format = copy.copy(source_cell.number_format)
                             target_cell.protection = copy.copy(source_cell.protection)
                             target_cell.alignment = copy.copy(source_cell.alignment)
-        row_offset[index]=row_offset[index]+sheet.max_row-4
+        row_offset[index]=row_offset[index]+sheet.max_row-4-len(row_rm)
         print(row_offset)
-    if 'Sheet' in wb2.sheetnames:
-        del wb2['Sheet']
-    wb.close()
-
+        
+if 'Sheet' in wb2.sheetnames:
+    del wb2['Sheet']
+    
+wb.close()
 wb2.save(save_path)
 wb2.close()
 print('Done.')
