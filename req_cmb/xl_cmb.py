@@ -6,15 +6,29 @@ import time
 import glob
 import numpy as np
 from extlib import act_max_row
+from tkinter import filedialog
+import sys
 
-user_path = os.path.dirname(__file__)
+#user_path = os.path.dirname(__file__)
 #folder_path=user_path+os.sep+time.strftime("%Y-%m-%d")
-folder_path = user_path+os.sep+'temp\\'
+#folder_path = user_path+os.sep+'temp\\'
 #folder_path = 'C:\\DEF\\siengine_svn\\1-Project_Development\\AD1000\\Dev\\2-Design\\Subsystem_Design\\NOC_SS\\1-spec\\2-ip_requirement\\M0\\'
+folder_path = './'
 #list_file=os.listdir(folder_path)
-list_file=glob.glob(folder_path+'*ments_*.xlsx')
+#list_file=glob.glob(folder_path+'*ments_*.xlsx')
+list_file = filedialog.askopenfilenames(initialdir = folder_path)
+
+
+#print(list_file)
+
 if(len(list_file)==0):
     print('error : no files specified!')
+    sys.exit(-1)
+    
+else:
+    print('%d files were selected!\n' % len(list_file))
+    
+
 row_offset = [0,0]
 save_path = 'test.xlsx'
 wb2 = openpyxl.Workbook()
